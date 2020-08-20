@@ -1,0 +1,86 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+
+metadata:
+  name: services.turandot.puccini.cloud
+
+spec:
+  group: turandot.puccini.cloud
+  names:
+    singular: service
+    plural: services
+    kind: Service
+    listKind: ServiceList
+    shortNames:
+    - si # = ServIce? Service Instance?
+    categories:
+    - all # will appear in "kubectl get all"
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true # one and only one version must be marked with storage=true
+    subresources: # requires CustomResourceSubresources feature gate enabled
+      status: {}
+    schema:
+      openAPIV3Schema:
+        type: object
+        required: [ spec ]
+        properties:
+          spec:
+            type: object
+            required: [ serviceTemplateUrl ]
+            properties:
+              serviceTemplateUrl:
+                type: string
+              inputs:
+                type: object
+                nullable: true
+                additionalProperties:
+                  type: string
+              mode:
+                type: string
+          status:
+            type: object
+            properties:
+              cloutPath:
+                type: string
+              cloutHash:
+                type: string
+              serviceTemplateUrl:
+                type: string
+              inputs:
+                type: object
+                nullable: true
+                additionalProperties:
+                  type: string
+              outputs:
+                type: object
+                nullable: true
+                additionalProperties:
+                  type: string
+              instantiationState:
+                type: string
+                enum:
+                - NotInstantiated
+                - Instantiating
+                - Instantiated
+              nodeStates:
+                type: object
+                nullable: true
+                additionalProperties:
+                  type: object
+                  properties:
+                    mode:
+                      type: string
+                    state:
+                      type: string
+                      enum:
+                      - Accepted
+                      - Rejected
+                      - Achieved
+                      - Failed
+                    message:
+                      type: string
+              mode:
+                type: string

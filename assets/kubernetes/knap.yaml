@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ServiceAccount
+
+metadata:
+  name: knap
+  namespace: !!string $NAMESPACE
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+
+metadata:
+  name: knap
+  namespace: !!string $NAMESPACE
+
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+
+metadata:
+  name: knap
+  namespace: !!string $NAMESPACE
+
+subjects:
+- kind: ServiceAccount
+  name: knap
+  namespace: !!string $NAMESPACE # required
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: knap # must be in our namespace
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: knap-operator
+  namespace: !!string $NAMESPACE
+  labels:
+    app.kubernetes.io/name: knap-operator
+    app.kubernetes.io/instance: knap-operator-$NAMESPACE
+    app.kubernetes.io/version: !!string $VERSION
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: knap
+    app.kubernetes.io/managed-by: knap
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knap-operator
+      app.kubernetes.io/instance: knap-operator-$NAMESPACE
+      app.kubernetes.io/version: !!string $VERSION
+      app.kubernetes.io/component: operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knap-operator
+        app.kubernetes.io/instance: knap-operator-$NAMESPACE
+        app.kubernetes.io/version: !!string $VERSION
+        app.kubernetes.io/component: operator
+        app.kubernetes.io/part-of: knap
+        app.kubernetes.io/managed-by: knap
+    spec:
+      serviceAccountName: knap # must be in our namespace
+      containers:
+      - name: operator
+        image: $REGISTRY_URL/tliron/knap-operator:latest
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: cache
+          mountPath: /cache
+        env:
+        # Vars with the "KNAP_OPERATOR_" prefix become CLI flags 
+        - name: KNAP_OPERATOR_site
+          value: default
+        - name: KNAP_OPERATOR_cache
+          value: /cache
+        - name: KNAP_OPERATOR_concurrency
+          value: '3'
+        - name: KNAP_OPERATOR_verbose
+          value: '1'
+        # To enable cluster mode we also need: cluster-mode-authorization.yaml
+        #- name: KNAP_OPERATOR_cluster
+        #  value: 'true'
+        livenessProbe:
+          httpGet:
+            port: 8086
+            path: /live
+        readinessProbe:
+          httpGet:
+            port: 8086
+            path: /ready
+      volumes:
+      - name: cache
+        emptyDir: {}

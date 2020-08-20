@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+
+gofmt -w -s -e \
+	"$ROOT/knap" \
+	"$ROOT/knap-operator" \
+	"$ROOT/version"
