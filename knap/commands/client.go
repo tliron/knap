@@ -4,7 +4,9 @@ import (
 	contextpkg "context"
 
 	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
+	knappkg "github.com/tliron/knap/apis/clientset/versioned"
 	"github.com/tliron/knap/client"
+	"github.com/tliron/knap/controller"
 	puccinicommon "github.com/tliron/puccini/common"
 	turandotcommon "github.com/tliron/turandot/common"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -24,6 +26,9 @@ func NewClient() *client.Client {
 	net, err := netpkg.NewForConfig(config)
 	puccinicommon.FailOnError(err)
 
+	knap, err := knappkg.NewForConfig(config)
+	puccinicommon.FailOnError(err)
+
 	namespace_ := namespace
 	if cluster {
 		namespace_ = ""
@@ -37,13 +42,18 @@ func NewClient() *client.Client {
 	}
 
 	return &client.Client{
-		Config:        config,
-		Kubernetes:    kubernetes,
-		APIExtensions: apiExtensions,
-		Net:           net,
-		Cluster:       cluster,
-		Namespace:     namespace_,
-		Context:       contextpkg.TODO(),
-		Log:           log,
+		Config:            config,
+		Kubernetes:        kubernetes,
+		APIExtensions:     apiExtensions,
+		Net:               net,
+		Knap:              knap,
+		Cluster:           cluster,
+		Namespace:         namespace_,
+		NamePrefix:        controller.NamePrefix,
+		PartOf:            controller.PartOf,
+		ManagedBy:         controller.ManagedBy,
+		OperatorImageName: controller.OperatorImageName,
+		Context:           contextpkg.TODO(),
+		Log:               log,
 	}
 }

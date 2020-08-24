@@ -7,6 +7,7 @@ replace github.com/tliron/puccini => /Depot/Projects/RedHat/puccini
 replace github.com/tliron/turandot => /Depot/Projects/RedHat/turandot
 
 require (
+	github.com/google/uuid v1.1.1
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200626054723-37f83d1996bc
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7

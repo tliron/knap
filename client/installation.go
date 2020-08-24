@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/tliron/knap/controller"
 	resources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
 	"github.com/tliron/turandot/version"
 	apps "k8s.io/api/apps/v1"
@@ -68,29 +67,29 @@ func (self *Client) Uninstall(wait bool) {
 	}
 
 	// Operator deployment
-	if err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Delete(self.Context, fmt.Sprintf("%s-operator", controller.NamePrefix), deleteOptions); err != nil {
+	if err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Delete(self.Context, fmt.Sprintf("%s-operator", self.NamePrefix), deleteOptions); err != nil {
 		self.Log.Warningf("%s", err)
 	}
 
 	if self.Cluster {
 		// Cluster role binding
-		if err := self.Kubernetes.RbacV1().ClusterRoleBindings().Delete(self.Context, controller.NamePrefix, deleteOptions); err != nil {
+		if err := self.Kubernetes.RbacV1().ClusterRoleBindings().Delete(self.Context, self.NamePrefix, deleteOptions); err != nil {
 			self.Log.Warningf("%s", err)
 		}
 	} else {
 		// Role binding
-		if err := self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Delete(self.Context, controller.NamePrefix, deleteOptions); err != nil {
+		if err := self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Delete(self.Context, self.NamePrefix, deleteOptions); err != nil {
 			self.Log.Warningf("%s", err)
 		}
 
 		// Role
-		if err := self.Kubernetes.RbacV1().Roles(self.Namespace).Delete(self.Context, controller.NamePrefix, deleteOptions); err != nil {
+		if err := self.Kubernetes.RbacV1().Roles(self.Namespace).Delete(self.Context, self.NamePrefix, deleteOptions); err != nil {
 			self.Log.Warningf("%s", err)
 		}
 	}
 
 	// Service account
-	if err := self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Delete(self.Context, controller.NamePrefix, deleteOptions); err != nil {
+	if err := self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Delete(self.Context, self.NamePrefix, deleteOptions); err != nil {
 		self.Log.Warningf("%s", err)
 	}
 
@@ -101,30 +100,30 @@ func (self *Client) Uninstall(wait bool) {
 
 	if wait {
 		self.waitForDeletion("service", func() bool {
-			_, err := self.Kubernetes.CoreV1().Services(self.Namespace).Get(self.Context, fmt.Sprintf("%s-inventory", controller.NamePrefix), meta.GetOptions{})
+			_, err := self.Kubernetes.CoreV1().Services(self.Namespace).Get(self.Context, fmt.Sprintf("%s-inventory", self.NamePrefix), meta.GetOptions{})
 			return err == nil
 		})
 		self.waitForDeletion("operator deployment", func() bool {
-			_, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, fmt.Sprintf("%s-operator", controller.NamePrefix), meta.GetOptions{})
+			_, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, fmt.Sprintf("%s-operator", self.NamePrefix), meta.GetOptions{})
 			return err == nil
 		})
 		if self.Cluster {
 			self.waitForDeletion("cluster role binding", func() bool {
-				_, err := self.Kubernetes.RbacV1().ClusterRoleBindings().Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+				_, err := self.Kubernetes.RbacV1().ClusterRoleBindings().Get(self.Context, self.NamePrefix, meta.GetOptions{})
 				return err == nil
 			})
 		} else {
 			self.waitForDeletion("role binding", func() bool {
-				_, err := self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+				_, err := self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 				return err == nil
 			})
 			self.waitForDeletion("role", func() bool {
-				_, err := self.Kubernetes.RbacV1().Roles(self.Namespace).Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+				_, err := self.Kubernetes.RbacV1().Roles(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 				return err == nil
 			})
 		}
 		self.waitForDeletion("service account", func() bool {
-			_, err := self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+			_, err := self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 			return err == nil
 		})
 		self.waitForDeletion("custom resource definition", func() bool {
@@ -167,7 +166,7 @@ func (self *Client) createNamespace() (*core.Namespace, error) {
 func (self *Client) createServiceAccount() (*core.ServiceAccount, error) {
 	serviceAccount := &core.ServiceAccount{
 		ObjectMeta: meta.ObjectMeta{
-			Name: controller.NamePrefix,
+			Name: self.NamePrefix,
 		},
 	}
 
@@ -175,7 +174,7 @@ func (self *Client) createServiceAccount() (*core.ServiceAccount, error) {
 		return serviceAccount, nil
 	} else if errors.IsAlreadyExists(err) {
 		self.Log.Infof("%s", err.Error())
-		return self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+		return self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 	} else {
 		return nil, err
 	}
@@ -184,7 +183,7 @@ func (self *Client) createServiceAccount() (*core.ServiceAccount, error) {
 func (self *Client) createRole() (*rbac.Role, error) {
 	role := &rbac.Role{
 		ObjectMeta: meta.ObjectMeta{
-			Name: controller.NamePrefix,
+			Name: self.NamePrefix,
 		},
 		Rules: []rbac.PolicyRule{
 			{
@@ -199,7 +198,7 @@ func (self *Client) createRole() (*rbac.Role, error) {
 		return role, err
 	} else if errors.IsAlreadyExists(err) {
 		self.Log.Infof("%s", err.Error())
-		return self.Kubernetes.RbacV1().Roles(self.Namespace).Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+		return self.Kubernetes.RbacV1().Roles(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 	} else {
 		return nil, err
 	}
@@ -208,7 +207,7 @@ func (self *Client) createRole() (*rbac.Role, error) {
 func (self *Client) createRoleBinding(serviceAccount *core.ServiceAccount, role *rbac.Role) (*rbac.RoleBinding, error) {
 	roleBinding := &rbac.RoleBinding{
 		ObjectMeta: meta.ObjectMeta{
-			Name: controller.NamePrefix,
+			Name: self.NamePrefix,
 		},
 		Subjects: []rbac.Subject{
 			{
@@ -228,7 +227,7 @@ func (self *Client) createRoleBinding(serviceAccount *core.ServiceAccount, role 
 		return roleBinding, nil
 	} else if errors.IsAlreadyExists(err) {
 		self.Log.Infof("%s", err.Error())
-		return self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+		return self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 	} else {
 		return nil, err
 	}
@@ -237,7 +236,7 @@ func (self *Client) createRoleBinding(serviceAccount *core.ServiceAccount, role 
 func (self *Client) createClusterRoleBinding(serviceAccount *core.ServiceAccount) (*rbac.ClusterRoleBinding, error) {
 	clusterRoleBinding := &rbac.ClusterRoleBinding{
 		ObjectMeta: meta.ObjectMeta{
-			Name: controller.NamePrefix,
+			Name: self.NamePrefix,
 		},
 		Subjects: []rbac.Subject{
 			{
@@ -257,14 +256,14 @@ func (self *Client) createClusterRoleBinding(serviceAccount *core.ServiceAccount
 		return clusterRoleBinding, nil
 	} else if errors.IsAlreadyExists(err) {
 		self.Log.Infof("%s", err.Error())
-		return self.Kubernetes.RbacV1().ClusterRoleBindings().Get(self.Context, controller.NamePrefix, meta.GetOptions{})
+		return self.Kubernetes.RbacV1().ClusterRoleBindings().Get(self.Context, self.NamePrefix, meta.GetOptions{})
 	} else {
 		return nil, err
 	}
 }
 
 func (self *Client) createOperatorDeployment(registry string, serviceAccount *core.ServiceAccount, replicas int32) (*apps.Deployment, error) {
-	appName := fmt.Sprintf("%s-operator", controller.NamePrefix)
+	appName := fmt.Sprintf("%s-operator", self.NamePrefix)
 	instanceName := fmt.Sprintf("%s-%s", appName, self.Namespace)
 
 	deployment := &apps.Deployment{
@@ -275,8 +274,8 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 				"app.kubernetes.io/instance":   instanceName,
 				"app.kubernetes.io/version":    version.GitVersion,
 				"app.kubernetes.io/component":  "operator",
-				"app.kubernetes.io/part-of":    controller.PartOf,
-				"app.kubernetes.io/managed-by": controller.ManagedBy,
+				"app.kubernetes.io/part-of":    self.PartOf,
+				"app.kubernetes.io/managed-by": self.ManagedBy,
 			},
 		},
 		Spec: apps.DeploymentSpec{
@@ -296,8 +295,8 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 						"app.kubernetes.io/instance":   instanceName,
 						"app.kubernetes.io/version":    version.GitVersion,
 						"app.kubernetes.io/component":  "operator",
-						"app.kubernetes.io/part-of":    controller.PartOf,
-						"app.kubernetes.io/managed-by": controller.ManagedBy,
+						"app.kubernetes.io/part-of":    self.PartOf,
+						"app.kubernetes.io/managed-by": self.ManagedBy,
 					},
 				},
 				Spec: core.PodSpec{
@@ -305,7 +304,7 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 					Containers: []core.Container{
 						{
 							Name:            "operator",
-							Image:           fmt.Sprintf("%s/%s", registry, controller.OperatorImageName),
+							Image:           fmt.Sprintf("%s/%s", registry, self.OperatorImageName),
 							ImagePullPolicy: core.PullAlways,
 							Env: []core.EnvVar{
 								{

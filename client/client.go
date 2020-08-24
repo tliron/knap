@@ -5,6 +5,7 @@ import (
 
 	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	"github.com/op/go-logging"
+	knappkg "github.com/tliron/knap/apis/clientset/versioned"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetespkg "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -12,12 +13,17 @@ import (
 
 type Client struct {
 	Config        *rest.Config
-	Kubernetes    *kubernetespkg.Clientset
-	APIExtensions *apiextensionspkg.Clientset
-	Net           *netpkg.Clientset
+	Kubernetes    kubernetespkg.Interface
+	APIExtensions apiextensionspkg.Interface
+	Net           netpkg.Interface
+	Knap          knappkg.Interface
 
-	Cluster   bool
-	Namespace string
+	Cluster           bool
+	Namespace         string
+	NamePrefix        string
+	PartOf            string
+	ManagedBy         string
+	OperatorImageName string
 
 	Context context.Context
 	Log     *logging.Logger

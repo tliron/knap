@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/heptiolabs/healthcheck"
+	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	"github.com/tebeka/atexit"
 	knappkg "github.com/tliron/knap/apis/clientset/versioned"
 	controllerpkg "github.com/tliron/knap/controller"
@@ -55,6 +56,9 @@ func Controller() {
 	apiExtensionsClient, err := apiextensionspkg.NewForConfig(config)
 	puccinicommon.FailOnError(err)
 
+	netClient, err := netpkg.NewForConfig(config)
+	puccinicommon.FailOnError(err)
+
 	knapClient, err := knappkg.NewForConfig(config)
 	puccinicommon.FailOnError(err)
 
@@ -66,6 +70,7 @@ func Controller() {
 		namespace,
 		kubernetesClient,
 		apiExtensionsClient,
+		netClient,
 		knapClient,
 		config,
 		resyncPeriod,

@@ -1,0 +1,86 @@
+
+apiVersion: knap.github.com/v1alpha1
+kind: Network
+
+metadata:
+  name: implicit1
+  labels:
+    app.kubernetes.io/name: implicit1
+    app.kubernetes.io/component: network
+
+spec:
+  provider: bridge
+
+---
+
+apiVersion: knap.github.com/v1alpha1
+kind: Network
+
+metadata:
+  name: implicit2
+  labels:
+    app.kubernetes.io/name: implicit2
+    app.kubernetes.io/component: network
+
+spec:
+  provider: bridge
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: knap-hello-world1
+  labels:
+    app.kubernetes.io/name: knap-hello-world1
+    app.kubernetes.io/component: deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knap-hello-world1
+      app.kubernetes.io/component: deployment
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knap-hello-world1
+        app.kubernetes.io/component: deployment
+      annotations:
+        knap.github.com/networks: implicit1
+    spec:
+      containers:
+      - name: hello-world
+        image: docker.io/paulbouwer/hello-kubernetes:1.8
+        imagePullPolicy: Always
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: knap-hello-world2
+  labels:
+    app.kubernetes.io/name: knap-hello-world2
+    app.kubernetes.io/component: deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knap-hello-world2
+      app.kubernetes.io/component: deployment
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knap-hello-world2
+        app.kubernetes.io/component: deployment
+      annotations:
+        knap.github.com/networks: implicit2
+    spec:
+      containers:
+      - name: hello-world
+        image: docker.io/paulbouwer/hello-kubernetes:1.8
+        imagePullPolicy: Always

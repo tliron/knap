@@ -6,7 +6,14 @@ HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 . "$ROOT/scripts/_trap"
 
 minikube profile central
-knap uninstall -n workspace -w -v
+kubectl delete --namespace=workspace --wait -f "$ROOT/examples/hello-world/implicit.yaml" || true
+knap uninstall --namespace=workspace --wait -v
+kubectl delete events --all --namespace=workspace
+
+#echo "sudo ip link delete explicit1 || true && exit" | minikube ssh
+#echo "sudo ip link delete explicit2 || true && exit" | minikube ssh
+#echo "sudo ip link delete implicit1 || true && exit" | minikube ssh
+#echo "sudo ip link delete implicit2 || true && exit" | minikube ssh
 
 if [ "$1" == -b ]; then
 	"$ROOT/scripts/build-container-image"
@@ -15,8 +22,10 @@ fi
 
 kubectl config set-context central --namespace=workspace
 
-knap install -w -v
+knap install --wait -v
 
-#knap logs -f
+kubectl apply -f "$ROOT/examples/hello-world/implicit.yaml"
+
+knap logs --follow
 
 # Clean ~/.local/share/containers/ occassionally!

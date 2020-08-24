@@ -1,0 +1,121 @@
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+
+metadata:
+  name: explicit1
+  labels:
+    app.kubernetes.io/name: explicit1
+    app.kubernetes.io/component: network
+
+spec:
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "bridge",
+      "name": "explicit1",
+      "bridge": "explicit1",
+      "isDefaultGateway": true,
+      "ipMasq": true,
+      "promiscMode": true,
+      "ipam": {
+        "type": "host-local",
+        "subnet": "192.168.2.0/24",
+        "rangeStart": "192.168.2.2",
+        "rangeEnd": "192.168.2.254",
+        "routes": [
+          { "dst": "0.0.0.0/0" }
+        ],
+        "gateway": "192.168.2.1"
+      }
+    }'
+
+---
+
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+
+metadata:
+  name: explicit2
+  labels:
+    app.kubernetes.io/name: explicit2
+    app.kubernetes.io/component: network
+
+spec:
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "bridge",
+      "name": "explicit2",
+      "bridge": "explicit2",
+      "isDefaultGateway": true,
+      "ipMasq": true,
+      "promiscMode": true,
+      "ipam": {
+        "type": "host-local",
+        "subnet": "192.168.3.0/24",
+        "rangeStart": "192.168.3.2",
+        "rangeEnd": "192.168.3.254",
+        "routes": [
+          { "dst": "0.0.0.0/0" }
+        ],
+        "gateway": "192.168.3.1"
+      }
+    }'
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: knap-hello-world1
+  labels:
+    app.kubernetes.io/name: knap-hello-world1
+    app.kubernetes.io/component: deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knap-hello-world1
+      app.kubernetes.io/component: deployment
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knap-hello-world1
+        app.kubernetes.io/component: deployment
+      annotations:
+        k8s.v1.cni.cncf.io/networks: explicit1
+    spec:
+      containers:
+      - name: hello-world
+        image: docker.io/paulbouwer/hello-kubernetes:1.8
+        imagePullPolicy: Always
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: knap-hello-world2
+  labels:
+    app.kubernetes.io/name: knap-hello-world2
+    app.kubernetes.io/component: deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: knap-hello-world2
+      app.kubernetes.io/component: deployment
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: knap-hello-world2
+        app.kubernetes.io/component: deployment
+      annotations:
+        k8s.v1.cni.cncf.io/networks: explicit2
+    spec:
+      containers:
+      - name: hello-world
+        image: docker.io/paulbouwer/hello-kubernetes:1.8
+        imagePullPolicy: Always

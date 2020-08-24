@@ -77,15 +77,8 @@ spec:
       - name: operator
         image: $REGISTRY_URL/tliron/knap-operator:latest
         imagePullPolicy: Always
-        volumeMounts:
-        - name: cache
-          mountPath: /cache
         env:
         # Vars with the "KNAP_OPERATOR_" prefix become CLI flags 
-        - name: KNAP_OPERATOR_site
-          value: default
-        - name: KNAP_OPERATOR_cache
-          value: /cache
         - name: KNAP_OPERATOR_concurrency
           value: '3'
         - name: KNAP_OPERATOR_verbose
@@ -101,6 +94,3 @@ spec:
           httpGet:
             port: 8086
             path: /ready
-      volumes:
-      - name: cache
-        emptyDir: {}

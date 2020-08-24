@@ -17,6 +17,8 @@ const (
 	NetworkSingular  = "network"
 	NetworkPlural    = "networks"
 	NetworkShortName = "nw"
+
+	NetworkAnnotation = "knap.github.com/networks"
 )
 
 //
@@ -34,7 +36,7 @@ type Network struct {
 }
 
 type NetworkSpec struct {
-	Name string `json:"name"`
+	Provider string `json:"provider"`
 }
 
 type NetworkStatus struct {
@@ -95,9 +97,9 @@ var NetworkCustomResourceDefinition = apiextensions.CustomResourceDefinition{
 						Properties: map[string]apiextensions.JSONSchemaProps{
 							"spec": {
 								Type:     "object",
-								Required: []string{"name"},
+								Required: []string{"provider"},
 								Properties: map[string]apiextensions.JSONSchemaProps{
-									"name": {
+									"provider": {
 										Type: "string",
 									},
 								},

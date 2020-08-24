@@ -4,10 +4,12 @@ import (
 	contextpkg "context"
 	"time"
 
+	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	"github.com/op/go-logging"
 	knapclientset "github.com/tliron/knap/apis/clientset/versioned"
 	knapinformers "github.com/tliron/knap/apis/informers/externalversions"
 	knaplisters "github.com/tliron/knap/apis/listers/knap.github.com/v1alpha1"
+	clientpkg "github.com/tliron/knap/client"
 	knapresources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
 	"github.com/tliron/turandot/common"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -23,9 +25,10 @@ import (
 //
 
 type Controller struct {
+	Config      *restpkg.Config
 	Kubernetes  kubernetes.Interface
 	Knap        knapclientset.Interface
-	Config      *restpkg.Config
+	Client      *clientpkg.Client
 	StopChannel <-chan struct{}
 
 	Processors *common.Processors
@@ -40,7 +43,7 @@ type Controller struct {
 	Log     *logging.Logger
 }
 
-func NewController(toolName string, cluster bool, namespace string, kubernetes kubernetes.Interface, apiExtensions apiextensionspkg.Interface, knap knapclientset.Interface, config *restpkg.Config, informerResyncPeriod time.Duration, stopChannel <-chan struct{}) *Controller {
+func NewController(toolName string, cluster bool, namespace string, kubernetes kubernetes.Interface, apiExtensions apiextensionspkg.Interface, net netpkg.Interface, knap knapclientset.Interface, config *restpkg.Config, informerResyncPeriod time.Duration, stopChannel <-chan struct{}) *Controller {
 	context := contextpkg.TODO()
 
 	if cluster {
@@ -50,13 +53,30 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 	log := logging.MustGetLogger("knap.controller")
 
 	self := Controller{
-		Config:     config,
-		Kubernetes: kubernetes,
-		Knap:       knap,
-		Processors: common.NewProcessors(),
-		Events:     common.CreateEventRecorder(kubernetes, "Knap", log),
-		Context:    context,
-		Log:        log,
+		Config:      config,
+		Kubernetes:  kubernetes,
+		Knap:        knap,
+		StopChannel: stopChannel,
+		Processors:  common.NewProcessors(),
+		Events:      common.CreateEventRecorder(kubernetes, "Knap", log),
+		Context:     context,
+		Log:         log,
+	}
+
+	self.Client = &clientpkg.Client{
+		Config:            config,
+		Kubernetes:        kubernetes,
+		APIExtensions:     apiExtensions,
+		Net:               net,
+		Knap:              knap,
+		Cluster:           cluster,
+		Namespace:         namespace,
+		NamePrefix:        NamePrefix,
+		PartOf:            PartOf,
+		ManagedBy:         ManagedBy,
+		OperatorImageName: OperatorImageName,
+		Context:           contextpkg.TODO(),
+		Log:               log,
 	}
 
 	if cluster {
@@ -82,12 +102,11 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		networkInformer.Informer(),
 		processorPeriod,
 		func(name string, namespace string) (interface{}, error) {
-			//return self.Client.GetService(namespace, name)
+			return self.Client.GetNetwork(namespace, name)
 			return nil, nil
 		},
 		func(object interface{}) (bool, error) {
-			//return self.processService(object.(*turandotresources.Service))
-			return false, nil
+			return self.processNetwork(object.(*knapresources.Network))
 		},
 	))
 
