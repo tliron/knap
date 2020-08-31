@@ -4,8 +4,8 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
-	puccinicommon "github.com/tliron/puccini/common"
-	"github.com/tliron/puccini/common/terminal"
+	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/kutil/util"
 )
 
 var tail int
@@ -23,7 +23,7 @@ var logsCommand = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: what happens if we follow more than one log?
 		readers, err := NewClient().Logs("operator", "operator", tail, follow)
-		puccinicommon.FailOnError(err)
+		util.FailOnError(err)
 		for _, reader := range readers {
 			defer reader.Close()
 		}

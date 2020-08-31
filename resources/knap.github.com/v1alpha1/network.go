@@ -36,11 +36,13 @@ type Network struct {
 }
 
 type NetworkSpec struct {
-	Provider string `json:"provider"`
+	Provider string            `json:"provider"`
+	Hints    map[string]string `json:"hints"`
 }
 
 type NetworkStatus struct {
-	Name string `json:"name"`
+	NetworkAttachmentDefinitions []string `json:"networkAttachmentDefinitions"`
+	Deployments                  []string `json:"deployments"`
 }
 
 //
@@ -102,13 +104,37 @@ var NetworkCustomResourceDefinition = apiextensions.CustomResourceDefinition{
 									"provider": {
 										Type: "string",
 									},
+									"hints": {
+										Type:     "object",
+										Nullable: true,
+										AdditionalProperties: &apiextensions.JSONSchemaPropsOrBool{
+											Schema: &apiextensions.JSONSchemaProps{
+												Type: "string",
+											},
+										},
+									},
 								},
 							},
 							"status": {
 								Type: "object",
 								Properties: map[string]apiextensions.JSONSchemaProps{
-									"name": {
-										Type: "string",
+									"networkAttachmentDefinitions": {
+										Type:     "array",
+										Nullable: true,
+										Items: &apiextensions.JSONSchemaPropsOrArray{
+											Schema: &apiextensions.JSONSchemaProps{
+												Type: "string",
+											},
+										},
+									},
+									"deployments": {
+										Type:     "array",
+										Nullable: true,
+										Items: &apiextensions.JSONSchemaPropsOrArray{
+											Schema: &apiextensions.JSONSchemaProps{
+												Type: "string",
+											},
+										},
 									},
 								},
 							},

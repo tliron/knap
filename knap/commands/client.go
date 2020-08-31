@@ -7,37 +7,37 @@ import (
 	knappkg "github.com/tliron/knap/apis/clientset/versioned"
 	"github.com/tliron/knap/client"
 	"github.com/tliron/knap/controller"
-	puccinicommon "github.com/tliron/puccini/common"
-	turandotcommon "github.com/tliron/turandot/common"
+	kubernetesutil "github.com/tliron/kutil/kubernetes"
+	"github.com/tliron/kutil/util"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetespkg "k8s.io/client-go/kubernetes"
 )
 
 func NewClient() *client.Client {
-	config, err := turandotcommon.NewConfigFromFlags(masterUrl, kubeconfigPath, context, log)
-	puccinicommon.FailOnError(err)
+	config, err := kubernetesutil.NewConfigFromFlags(masterUrl, kubeconfigPath, context, log)
+	util.FailOnError(err)
 
 	kubernetes, err := kubernetespkg.NewForConfig(config)
-	puccinicommon.FailOnError(err)
+	util.FailOnError(err)
 
 	apiExtensions, err := apiextensionspkg.NewForConfig(config)
-	puccinicommon.FailOnError(err)
+	util.FailOnError(err)
 
 	net, err := netpkg.NewForConfig(config)
-	puccinicommon.FailOnError(err)
+	util.FailOnError(err)
 
 	knap, err := knappkg.NewForConfig(config)
-	puccinicommon.FailOnError(err)
+	util.FailOnError(err)
 
 	namespace_ := namespace
 	if cluster {
 		namespace_ = ""
 	} else if namespace_ == "" {
-		if namespace__, ok := turandotcommon.GetConfiguredNamespace(kubeconfigPath, context); ok {
+		if namespace__, ok := kubernetesutil.GetConfiguredNamespace(kubeconfigPath, context); ok {
 			namespace_ = namespace__
 		}
 		if namespace_ == "" {
-			puccinicommon.Fail("could not discover namespace and \"--namespace\" not provided")
+			util.Fail("could not discover namespace and \"--namespace\" not provided")
 		}
 	}
 

@@ -19,3 +19,4 @@ function push () {
 }
 
 push knap-operator
+push knap-provider-bridge

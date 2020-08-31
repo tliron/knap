@@ -5,7 +5,7 @@ import (
 	"time"
 
 	resources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
-	"github.com/tliron/turandot/version"
+	"github.com/tliron/kutil/version"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -51,8 +51,16 @@ func (self *Client) Install(registry string, wait bool) error {
 		return err
 	}
 
+	var bridgeProviderDeployment *apps.Deployment
+	if bridgeProviderDeployment, err = self.createProviderDeployment("bridge", "tliron/knap-provider-bridge", registry, serviceAccount, 1); err != nil {
+		return err
+	}
+
 	if wait {
 		if _, err := self.waitForDeployment(operatorDeployment.Name); err != nil {
+			return err
+		}
+		if _, err := self.waitForDeployment(bridgeProviderDeployment.Name); err != nil {
 			return err
 		}
 	}
@@ -68,6 +76,11 @@ func (self *Client) Uninstall(wait bool) {
 
 	// Operator deployment
 	if err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Delete(self.Context, fmt.Sprintf("%s-operator", self.NamePrefix), deleteOptions); err != nil {
+		self.Log.Warningf("%s", err)
+	}
+
+	// Bridge provider deployment
+	if err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Delete(self.Context, fmt.Sprintf("%s-provider-bridge", self.NamePrefix), deleteOptions); err != nil {
 		self.Log.Warningf("%s", err)
 	}
 
@@ -105,6 +118,10 @@ func (self *Client) Uninstall(wait bool) {
 		})
 		self.waitForDeletion("operator deployment", func() bool {
 			_, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, fmt.Sprintf("%s-operator", self.NamePrefix), meta.GetOptions{})
+			return err == nil
+		})
+		self.waitForDeletion("bridge provider deployment", func() bool {
+			_, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, fmt.Sprintf("%s-provider-bridge", self.NamePrefix), meta.GetOptions{})
 			return err == nil
 		})
 		if self.Cluster {
@@ -316,6 +333,76 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 									Value: "1",
 								},
 							},
+							LivenessProbe: &core.Probe{
+								Handler: core.Handler{
+									HTTPGet: &core.HTTPGetAction{
+										Port: intstr.FromInt(8086),
+										Path: "/live",
+									},
+								},
+							},
+							ReadinessProbe: &core.Probe{
+								Handler: core.Handler{
+									HTTPGet: &core.HTTPGetAction{
+										Port: intstr.FromInt(8086),
+										Path: "/ready",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	return self.createDeployment(deployment, appName)
+}
+
+func (self *Client) createProviderDeployment(provider string, imageName string, registry string, serviceAccount *core.ServiceAccount, replicas int32) (*apps.Deployment, error) {
+	appName := fmt.Sprintf("%s-provider-%s", self.NamePrefix, provider)
+	instanceName := fmt.Sprintf("%s-%s", appName, self.Namespace)
+
+	deployment := &apps.Deployment{
+		ObjectMeta: meta.ObjectMeta{
+			Name: appName,
+			Labels: map[string]string{
+				"app.kubernetes.io/name":       appName,
+				"app.kubernetes.io/instance":   instanceName,
+				"app.kubernetes.io/version":    version.GitVersion,
+				"app.kubernetes.io/component":  "provider",
+				"app.kubernetes.io/part-of":    self.PartOf,
+				"app.kubernetes.io/managed-by": self.ManagedBy,
+			},
+		},
+		Spec: apps.DeploymentSpec{
+			Replicas: &replicas,
+			Selector: &meta.LabelSelector{
+				MatchLabels: map[string]string{
+					"app.kubernetes.io/name":      appName,
+					"app.kubernetes.io/instance":  instanceName,
+					"app.kubernetes.io/version":   version.GitVersion,
+					"app.kubernetes.io/component": "provider",
+				},
+			},
+			Template: core.PodTemplateSpec{
+				ObjectMeta: meta.ObjectMeta{
+					Labels: map[string]string{
+						"app.kubernetes.io/name":       appName,
+						"app.kubernetes.io/instance":   instanceName,
+						"app.kubernetes.io/version":    version.GitVersion,
+						"app.kubernetes.io/component":  "provider",
+						"app.kubernetes.io/part-of":    self.PartOf,
+						"app.kubernetes.io/managed-by": self.ManagedBy,
+					},
+				},
+				Spec: core.PodSpec{
+					ServiceAccountName: serviceAccount.Name,
+					Containers: []core.Container{
+						{
+							Name:            "provider",
+							Image:           fmt.Sprintf("%s/%s", registry, imageName),
+							ImagePullPolicy: core.PullAlways,
 							LivenessProbe: &core.Probe{
 								Handler: core.Handler{
 									HTTPGet: &core.HTTPGetAction{

@@ -29,12 +29,25 @@ spec:
         properties:
           spec:
             type: object
-            required: [ name ]
+            required: [ provider ]
             properties:
               provider:
                 type: string
+              hints:
+                type: object
+                nullable: true
+                additionalProperties:
+                  type: string
           status:
             type: object
             properties:
-              name:
-                type: string
+              networkAttachmentDefinitions:
+                type: array
+                nullable: true
+                items:
+                  type: string
+              deployments:
+                type: array
+                nullable: true
+                items:
+                  type: string

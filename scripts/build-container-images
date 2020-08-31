@@ -27,3 +27,4 @@ function build () {
 }
 
 build knap-operator
+build knap-provider-bridge

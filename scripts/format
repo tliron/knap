@@ -5,6 +5,12 @@ HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 . "$HERE/_env"
 
 gofmt -w -s -e \
+	"$ROOT/client" \
+	"$ROOT/controller" \
 	"$ROOT/knap" \
 	"$ROOT/knap-operator" \
-	"$ROOT/version"
+	"$ROOT/knap-provider-bridge" \
+	"$ROOT/resources" \
+	"$ROOT/resources/knap.github.com" \
+	"$ROOT/resources/knap.github.com/v1alpha1"
+	

@@ -16,8 +16,8 @@ kubectl delete events --all --namespace=workspace
 #echo "sudo ip link delete implicit2 || true && exit" | minikube ssh
 
 if [ "$1" == -b ]; then
-	"$ROOT/scripts/build-container-image"
-	"$ROOT/scripts/publish-container-image"
+	"$ROOT/scripts/build-container-images"
+	"$ROOT/scripts/publish-container-images"
 fi
 
 kubectl config set-context central --namespace=workspace

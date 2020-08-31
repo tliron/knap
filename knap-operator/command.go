@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	puccinicommon "github.com/tliron/puccini/common"
-	"github.com/tliron/puccini/common/terminal"
-	"github.com/tliron/turandot/common"
+	cobrautil "github.com/tliron/kutil/cobra"
+	"github.com/tliron/kutil/terminal"
+	"github.com/tliron/kutil/util"
 )
 
 var logTo string
@@ -44,7 +44,7 @@ func init() {
 	command.Flags().StringVar(&cachePath, "cache", "", "cache path")
 	command.Flags().UintVar(&healthPort, "health-port", 8086, "HTTP port for health check (for liveness and readiness probes)")
 
-	common.SetCobraFlagsFromEnvironment("KNAP_OPERATOR_", command)
+	cobrautil.SetFlagsFromEnvironment("KNAP_OPERATOR_", command)
 }
 
 var command = &cobra.Command{
@@ -52,11 +52,11 @@ var command = &cobra.Command{
 	Short: "Start the Knap operator",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		err := terminal.ProcessColorizeFlag(colorize)
-		puccinicommon.FailOnError(err)
+		util.FailOnError(err)
 		if logTo == "" {
-			puccinicommon.ConfigureLogging(verbose, nil)
+			util.ConfigureLogging(verbose, nil)
 		} else {
-			puccinicommon.ConfigureLogging(verbose, &logTo)
+			util.ConfigureLogging(verbose, &logTo)
 		}
 		// TODO: init "k8s.io/klog"?
 	},
@@ -67,5 +67,5 @@ var command = &cobra.Command{
 
 func Execute() {
 	err := command.Execute()
-	puccinicommon.FailOnError(err)
+	util.FailOnError(err)
 }

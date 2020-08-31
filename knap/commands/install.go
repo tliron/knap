@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/spf13/cobra"
-	puccinicommon "github.com/tliron/puccini/common"
+	"github.com/tliron/kutil/util"
 )
 
 var cluster bool
@@ -21,6 +21,6 @@ var installCommand = &cobra.Command{
 	Short: "Install Knap",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := NewClient().Install(registry, wait)
-		puccinicommon.FailOnError(err)
+		util.FailOnError(err)
 	},
 }

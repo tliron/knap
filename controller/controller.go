@@ -11,7 +11,7 @@ import (
 	knaplisters "github.com/tliron/knap/apis/listers/knap.github.com/v1alpha1"
 	clientpkg "github.com/tliron/knap/client"
 	knapresources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
-	"github.com/tliron/turandot/common"
+	kubernetesutil "github.com/tliron/kutil/kubernetes"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/informers"
@@ -31,7 +31,7 @@ type Controller struct {
 	Client      *clientpkg.Client
 	StopChannel <-chan struct{}
 
-	Processors *common.Processors
+	Processors *kubernetesutil.Processors
 	Events     record.EventRecorder
 
 	KubernetesInformerFactory informers.SharedInformerFactory
@@ -57,8 +57,8 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		Kubernetes:  kubernetes,
 		Knap:        knap,
 		StopChannel: stopChannel,
-		Processors:  common.NewProcessors(),
-		Events:      common.CreateEventRecorder(kubernetes, "Knap", log),
+		Processors:  kubernetesutil.NewProcessors(),
+		Events:      kubernetesutil.CreateEventRecorder(kubernetes, "Knap", log),
 		Context:     context,
 		Log:         log,
 	}
@@ -97,7 +97,7 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 
 	processorPeriod := 5 * time.Second
 
-	self.Processors.Add(knapresources.NetworkGVK, common.NewProcessor(
+	self.Processors.Add(knapresources.NetworkGVK, kubernetesutil.NewProcessor(
 		"networks",
 		networkInformer.Informer(),
 		processorPeriod,
