@@ -2,16 +2,49 @@ package controller
 
 import (
 	"fmt"
+	"strings"
 
 	resources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
+	"github.com/tliron/kutil/kubernetes"
+	core "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/remotecommand"
 )
 
 func (self *Controller) createCniConfig(network *resources.Network) (string, error) {
-	switch network.Spec.Provider {
-	case "bridge":
-		return self.createBridgeCniConfig(network)
+	appName := fmt.Sprintf("knap-provider-%s", network.Spec.Provider)
 
-	default:
-		return "", fmt.Errorf("unsupported network provider: %s", network.Spec.Provider)
+	podName, err := kubernetes.GetFirstPodName(self.Context, self.Kubernetes, self.Client.Namespace, appName)
+	if err != nil {
+		return "", fmt.Errorf("cannot find provider for network %s/%s: %s\n%s", network.Namespace, network.Name, network.Spec.Provider, err.Error())
+	}
+
+	var stdout strings.Builder
+	var stderr strings.Builder
+
+	execOptions := core.PodExecOptions{
+		Container: "provider",
+		Command:   []string{appName, "cni", network.Name},
+		Stdout:    true,
+		Stderr:    true,
+		TTY:       false,
+	}
+
+	streamOptions := remotecommand.StreamOptions{
+		Stdout: &stdout,
+		Stderr: &stderr,
+		Tty:    false,
+	}
+
+	request := self.REST.Post().Namespace(self.Client.Namespace).Resource("pods").Name(podName).SubResource("exec").VersionedParams(&execOptions, scheme.ParameterCodec)
+
+	if executor, err := remotecommand.NewSPDYExecutor(self.Config, "POST", request.URL()); err == nil {
+		if err = executor.Stream(streamOptions); err == nil {
+			return stdout.String(), nil
+		} else {
+			return "", fmt.Errorf("%s\n%s", err.Error(), stderr.String())
+		}
+	} else {
+		return "", err
 	}
 }

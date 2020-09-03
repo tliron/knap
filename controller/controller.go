@@ -28,6 +28,7 @@ type Controller struct {
 	Config      *restpkg.Config
 	Kubernetes  kubernetes.Interface
 	Knap        knapclientset.Interface
+	REST        restpkg.Interface
 	Client      *clientpkg.Client
 	StopChannel <-chan struct{}
 
@@ -56,6 +57,7 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		Config:      config,
 		Kubernetes:  kubernetes,
 		Knap:        knap,
+		REST:        kubernetes.CoreV1().RESTClient(),
 		StopChannel: stopChannel,
 		Processors:  kubernetesutil.NewProcessors(),
 		Events:      kubernetesutil.CreateEventRecorder(kubernetes, "Knap", log),

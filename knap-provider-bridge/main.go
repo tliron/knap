@@ -25,7 +25,10 @@ func main() {
 		util.ConfigureLogging(verbose, &logTo)
 	}
 
-	if (len(os.Args) == 1) && os.Args[0] == "provide" {
+	if (len(os.Args) == 3) && os.Args[1] == "cni" {
+		cni, err := createBridgeCniConfig(os.Args[2])
+		util.FailOnError(err)
+		fmt.Fprintln(terminal.Stdout, cni)
 	} else {
 		log.Info("starting health monitor")
 		health := healthcheck.NewHandler()
