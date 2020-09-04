@@ -5,7 +5,7 @@ import (
 )
 
 func createBridgeCniConfig(name string) (string, error) {
-	if bridgePrefix, err := getBridgePrefix(); err == nil {
+	if bridgePrefix, err := GetBridgePrefix(); err == nil {
 		return fmt.Sprintf(`{
   "cniVersion": "0.3.1",
   "type": "bridge",

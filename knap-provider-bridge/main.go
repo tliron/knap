@@ -30,6 +30,9 @@ func main() {
 		util.FailOnError(err)
 		fmt.Fprintln(terminal.Stdout, cni)
 	} else {
+		_, err := SetState(initialState)
+		util.FailOnError(err)
+
 		log.Info("starting health monitor")
 		health := healthcheck.NewHandler()
 		err = http.ListenAndServe(fmt.Sprintf(":%d", healthPort), health)

@@ -1,18 +1,27 @@
+# Two network attachment definitions
+# Each a separate bridge network with an explicit CNI configuration
+
+# This is the direct use of Multus
+
+# Note that in order to write these CNI configurations you would need to know the network layout
+# of the *specific* node on the cluster, as well as know about any other CNI configurations
+# created on this *specific* node
+
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 
 metadata:
-  name: explicit1
+  name: explicit-a
   labels:
-    app.kubernetes.io/name: explicit1
+    app.kubernetes.io/name: explicit-a
     app.kubernetes.io/component: network
 
 spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "bridge",
-      "name": "explicit1",
-      "bridge": "explicit1",
+      "name": "explicit-a",
+      "bridge": "explicit-a",
       "isDefaultGateway": true,
       "ipMasq": true,
       "promiscMode": true,
@@ -34,17 +43,17 @@ apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 
 metadata:
-  name: explicit2
+  name: explicit-b
   labels:
-    app.kubernetes.io/name: explicit2
+    app.kubernetes.io/name: explicit-b
     app.kubernetes.io/component: network
 
 spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "bridge",
-      "name": "explicit2",
-      "bridge": "explicit2",
+      "name": "explicit-b",
+      "bridge": "explicit-b",
       "isDefaultGateway": true,
       "ipMasq": true,
       "promiscMode": true,
@@ -61,6 +70,10 @@ spec:
     }'
 
 ---
+
+# Two deployments
+# The first is attached just to network A
+# The second is attached to both networks
 
 apiVersion: apps/v1
 kind: Deployment
@@ -83,7 +96,7 @@ spec:
         app.kubernetes.io/name: knap-hello-world1
         app.kubernetes.io/component: deployment
       annotations:
-        k8s.v1.cni.cncf.io/networks: explicit1
+        k8s.v1.cni.cncf.io/networks: explicit-a
     spec:
       containers:
       - name: hello-world
@@ -113,7 +126,7 @@ spec:
         app.kubernetes.io/name: knap-hello-world2
         app.kubernetes.io/component: deployment
       annotations:
-        k8s.v1.cni.cncf.io/networks: explicit2
+        k8s.v1.cni.cncf.io/networks: explicit-a, explicit-b
     spec:
       containers:
       - name: hello-world

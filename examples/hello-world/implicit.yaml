@@ -1,11 +1,13 @@
+# Two networks
+# Each a separate bridge network
 
 apiVersion: knap.github.com/v1alpha1
 kind: Network
 
 metadata:
-  name: implicit1
+  name: implicit-a
   labels:
-    app.kubernetes.io/name: implicit1
+    app.kubernetes.io/name: implicit-a
     app.kubernetes.io/component: network
 
 spec:
@@ -17,15 +19,19 @@ apiVersion: knap.github.com/v1alpha1
 kind: Network
 
 metadata:
-  name: implicit2
+  name: implicit-b
   labels:
-    app.kubernetes.io/name: implicit2
+    app.kubernetes.io/name: implicit-b
     app.kubernetes.io/component: network
 
 spec:
   provider: bridge
 
 ---
+
+# Two deployments
+# The first is attached just to network A
+# The second is attached to both networks
 
 apiVersion: apps/v1
 kind: Deployment
@@ -48,7 +54,7 @@ spec:
         app.kubernetes.io/name: knap-hello-world1
         app.kubernetes.io/component: deployment
       annotations:
-        knap.github.com/networks: implicit1
+        knap.github.com/networks: implicit-a
     spec:
       containers:
       - name: hello-world
@@ -78,7 +84,7 @@ spec:
         app.kubernetes.io/name: knap-hello-world2
         app.kubernetes.io/component: deployment
       annotations:
-        knap.github.com/networks: implicit2
+        knap.github.com/networks: implicit-a, implicit-b
     spec:
       containers:
       - name: hello-world

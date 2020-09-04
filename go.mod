@@ -3,6 +3,7 @@ module github.com/tliron/knap
 go 1.15
 
 require (
+	github.com/gofrs/flock v0.0.0-20190320160742-5135e617513b
 	github.com/heptiolabs/healthcheck v0.0.0-20180807145615-6ff867650f40
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v0.0.0-20200626054723-37f83d1996bc
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
