@@ -3,6 +3,9 @@
 Knap
 ====
 
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tliron/knap)](https://goreportcard.com/report/github.com/tliron/knap)
+
 The Kubernetes Network Attachment Provider enables "network-as-a-service" for Kubernetes.
 
 This [Kubernetes](https://kubernetes.io/)
