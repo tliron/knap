@@ -49,6 +49,9 @@ Plugins
 Because one size cannot fit all in networking, Knap is designed with a plugin architecture, allowing
 custom plugins to be created for specific and proprietary network management needs.
 
+Plugins are implemented as independent pods and can be created and packaged independently of Knap.
+They can be as complex as necessary.
+
 Note that a Knap plugin could be backed by network functions running within the cluster, and that
 those network functions could in turn be using Knap (via other plugins) to gain access to other
 networks.

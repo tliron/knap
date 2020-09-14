@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+# sudo dnf install protobuf-compiler
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+. "$HERE/_trap"
+
+function generate () {
+	local TOOL=$1
+	pushd "$ROOT/$TOOL" > /dev/null
+	go generate
+	popd > /dev/null
+}
+
+generate provider

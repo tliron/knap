@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	resources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
+	"github.com/tliron/kutil/format"
 	"github.com/tliron/kutil/kubernetes"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -24,7 +25,7 @@ func (self *Controller) createCniConfig(network *resources.Network) (string, err
 
 	execOptions := core.PodExecOptions{
 		Container: "provider",
-		Command:   []string{appName, "cni", network.Name},
+		Command:   []string{appName, "provide", network.Name},
 		Stdout:    true,
 		Stderr:    true,
 		TTY:       false,
@@ -34,6 +35,15 @@ func (self *Controller) createCniConfig(network *resources.Network) (string, err
 		Stdout: &stdout,
 		Stderr: &stderr,
 		Tty:    false,
+	}
+
+	if network.Spec.Hints != nil {
+		if hints, err := format.EncodeYAML(network.Spec.Hints, "  ", false); err == nil {
+			execOptions.Stdin = true
+			streamOptions.Stdin = strings.NewReader(hints)
+		} else {
+			return "", err
+		}
 	}
 
 	request := self.REST.Post().Namespace(self.Client.Namespace).Resource("pods").Name(podName).SubResource("exec").VersionedParams(&execOptions, scheme.ParameterCodec)

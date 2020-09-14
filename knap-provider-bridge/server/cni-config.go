@@ -1,11 +1,11 @@
-package main
+package server
 
 import (
 	"fmt"
 )
 
-func createBridgeCniConfig(name string) (string, error) {
-	if bridgePrefix, err := GetBridgePrefix(); err == nil {
+func (self *Server) CreateBridgeCniConfig(name string) (string, error) {
+	if bridgePrefix, err := self.ProvideBridgePrefix(); err == nil {
 		return fmt.Sprintf(`{
   "cniVersion": "0.3.1",
   "type": "bridge",

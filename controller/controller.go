@@ -2,6 +2,7 @@ package controller
 
 import (
 	contextpkg "context"
+	"fmt"
 	"time"
 
 	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
@@ -51,7 +52,7 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		namespace = ""
 	}
 
-	log := logging.MustGetLogger("knap.controller")
+	log := logging.MustGetLogger(fmt.Sprintf("%s.controller", toolName))
 
 	self := Controller{
 		Config:      config,
@@ -59,7 +60,7 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		Knap:        knap,
 		REST:        kubernetes.CoreV1().RESTClient(),
 		StopChannel: stopChannel,
-		Processors:  kubernetesutil.NewProcessors(),
+		Processors:  kubernetesutil.NewProcessors(toolName),
 		Events:      kubernetesutil.CreateEventRecorder(kubernetes, "Knap", log),
 		Context:     context,
 		Log:         log,
@@ -100,6 +101,7 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 	processorPeriod := 5 * time.Second
 
 	self.Processors.Add(knapresources.NetworkGVK, kubernetesutil.NewProcessor(
+		toolName,
 		"networks",
 		networkInformer.Informer(),
 		processorPeriod,

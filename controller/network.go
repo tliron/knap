@@ -7,10 +7,13 @@ import (
 )
 
 func (self *Controller) processNetwork(network *resources.Network) (bool, error) {
+	var err error
 	var networkAttachmentDefinition *cniresources.NetworkAttachmentDefinition
 
-	var err error
-	if networkAttachmentDefinition, err = self.Client.GetNetworkAttachmentDefinition(network.Namespace, network.Name); err != nil {
+	// Validate network attachment definition
+	if networkAttachmentDefinition, err = self.Client.GetNetworkAttachmentDefinition(network.Namespace, network.Name); err == nil {
+		// TODO: should the provider ensure that it's correct?
+	} else {
 		if errors.IsNotFound(err) {
 			if cniConfig, err := self.createCniConfig(network); err == nil {
 				if networkAttachmentDefinition, err = self.Client.CreateNetworkAttachmentDefinition(network, cniConfig); err != nil {
@@ -24,9 +27,26 @@ func (self *Controller) processNetwork(network *resources.Network) (bool, error)
 		}
 	}
 
+	// Process deployments
 	if err := self.processDeployments(network, networkAttachmentDefinition); err == nil {
 		return true, nil
 	} else {
 		return false, err
 	}
+
+	// Process stateful sets
+	if err := self.processStatefulSets(network, networkAttachmentDefinition); err == nil {
+		return true, nil
+	} else {
+		return false, err
+	}
+
+	// Process daemon sets
+	if err := self.processDaemonSets(network, networkAttachmentDefinition); err == nil {
+		return true, nil
+	} else {
+		return false, err
+	}
+
+	// TODO: What about Independent ReplicaSets? Independent Pods even?
 }

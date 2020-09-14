@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+# sudo dnf install protobuf-compiler
+
 HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 . "$HERE/_env"
 . "$HERE/_trap"

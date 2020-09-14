@@ -46,6 +46,8 @@ func (self *Client) Install(registry string, wait bool) error {
 		}
 	}
 
+	// TODO: should these be DaemonSets?
+
 	var operatorDeployment *apps.Deployment
 	if operatorDeployment, err = self.createOperatorDeployment(registry, serviceAccount, 1); err != nil {
 		return err

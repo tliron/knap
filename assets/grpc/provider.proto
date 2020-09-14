@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = ".;provider";
+
+package provider;
+
+service Provider {
+  rpc CreateCniConfig (CreateCniConfigRequest) returns (CreateCniConfigReply) {}
+}
+
+message CreateCniConfigRequest {
+  string name = 1;
+  map<string, string> hints = 2;
+}
+
+message CreateCniConfigReply {
+  string config = 1;
+}
