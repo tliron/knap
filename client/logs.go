@@ -13,7 +13,7 @@ func (self *Client) Logs(appNameSuffix string, containerName string, tail int, f
 	if podNames, err := kubernetes.GetPodNames(self.Context, self.Kubernetes, self.Namespace, appName); err == nil {
 		readers := make([]io.ReadCloser, len(podNames))
 		for index, podName := range podNames {
-			if reader, err := kubernetes.Log(self.Kubernetes, self.Namespace, podName, containerName, tail, follow); err == nil {
+			if reader, err := kubernetes.Log(self.Context, self.Kubernetes, self.Namespace, podName, containerName, tail, follow); err == nil {
 				readers[index] = reader
 			} else {
 				for i := 0; i < index; i++ {

@@ -33,7 +33,7 @@ func (self *Server) InitializeState() error {
 func (self *Server) GetState() (ard.Map, error) {
 	if file, err := os.Open(self.StateFilename); err == nil {
 		defer file.Close()
-		if state, err := format.ReadYAML(file); err == nil {
+		if state, _, err := ard.ReadYAML(file, false); err == nil {
 			if map_, ok := state.(ard.Map); ok {
 				return map_, nil
 			} else {

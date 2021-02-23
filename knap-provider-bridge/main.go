@@ -10,9 +10,11 @@ import (
 	"github.com/tliron/knap/knap-provider-bridge/server"
 	"github.com/tliron/knap/provider"
 	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/format"
+	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
+
+	_ "github.com/tliron/kutil/logging/simple"
 )
 
 const SOCKET_NAME = "/tmp/knap-provider-bridge.sock"
@@ -27,9 +29,9 @@ func main() {
 	err := terminal.ProcessColorizeFlag(colorize)
 	util.FailOnError(err)
 	if logTo == "" {
-		util.ConfigureLogging(verbose, nil)
+		logging.Configure(verbose, nil)
 	} else {
-		util.ConfigureLogging(verbose, &logTo)
+		logging.Configure(verbose, &logTo)
 	}
 
 	if (len(os.Args) == 3) && os.Args[1] == "provide" {
@@ -59,7 +61,7 @@ func GetHints() map[string]string {
 		return nil
 	}
 
-	hints, err := format.DecodeYAML(util.BytesToString(bytes))
+	hints, _, err := ard.DecodeYAML(util.BytesToString(bytes), false)
 	util.FailOnError(err)
 
 	var hints_ map[string]string

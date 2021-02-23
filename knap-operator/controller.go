@@ -44,7 +44,7 @@ func Controller() {
 			namespace = kubernetesutil.GetServiceAccountNamespace()
 		}
 		if namespace == "" {
-			log.Fatal("could not discover namespace and namespace not provided")
+			util.Fail("could not discover namespace and namespace not provided")
 		}
 	}
 

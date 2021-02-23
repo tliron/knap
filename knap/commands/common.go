@@ -1,9 +1,9 @@
 package commands
 
 import (
-	"github.com/op/go-logging"
+	"github.com/tliron/kutil/logging"
 )
 
 const toolName = "knap"
 
-var log = logging.MustGetLogger(toolName)
+var log = logging.GetLogger(toolName)
