@@ -1,6 +1,6 @@
 module github.com/tliron/knap
 
-go 1.15
+go 1.16
 
 // replace github.com/tliron/kutil => /Depot/Projects/RedHat/kutil
 
@@ -11,8 +11,8 @@ require (
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.1.0
 	github.com/spf13/cobra v1.1.3
 	github.com/tebeka/atexit v0.3.0
-	github.com/tliron/kutil v0.1.20
-	google.golang.org/grpc v1.35.0
+	github.com/tliron/kutil v0.1.21
+	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/DATA-DOG/go-sqlmock.v1 v1.3.0 // indirect
 	k8s.io/api v0.20.4

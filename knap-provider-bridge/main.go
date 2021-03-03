@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 
@@ -55,7 +55,7 @@ func Client(name string) {
 }
 
 func GetHints() map[string]string {
-	bytes, err := ioutil.ReadAll(os.Stdin)
+	bytes, err := io.ReadAll(os.Stdin)
 	util.FailOnError(err)
 	if len(bytes) == 0 {
 		return nil
