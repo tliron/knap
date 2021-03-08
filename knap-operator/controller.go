@@ -6,7 +6,6 @@ import (
 
 	"github.com/heptiolabs/healthcheck"
 	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
-	"github.com/tebeka/atexit"
 	knappkg "github.com/tliron/knap/apis/clientset/versioned"
 	controllerpkg "github.com/tliron/knap/controller"
 	kubernetesutil "github.com/tliron/kutil/kubernetes"
@@ -23,7 +22,7 @@ import (
 func Controller() {
 	if version {
 		versionpkg.Print()
-		atexit.Exit(0)
+		util.Exit(0)
 		return
 	}
 
