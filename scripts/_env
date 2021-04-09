@@ -5,10 +5,16 @@ _HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 
 MODULE=github.com/tliron/knap
 
+K8S_VERSION=0.21.0
+
 ROOT=$(readlink --canonicalize "$_HERE/..")
 
 GOPATH=${GOPATH:-$HOME/go}
 
 WORKSPACE=${WORKSPACE:-workspace}
 
-export TMPDIR=/Depot/Temporary
+if [ -d /Depot/Temporary ]; then
+    export TMPDIR=/Depot/Temporary
+else
+    export TMPDIR=/tmp
+fi
