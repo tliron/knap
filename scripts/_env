@@ -5,11 +5,12 @@ _HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
 
 MODULE=github.com/tliron/knap
 
-K8S_VERSION=0.21.0
+K8S_VERSION=0.22.0
 
 ROOT=$(readlink --canonicalize "$_HERE/..")
 
 GOPATH=${GOPATH:-$HOME/go}
+export PATH=$GOPATH/bin:$PATH
 
 WORKSPACE=${WORKSPACE:-workspace}
 

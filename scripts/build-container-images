@@ -17,7 +17,7 @@ function build () {
 	# note: ubi-minimal does not have "tar" which is needed for kubectl cp
 
 	local CONTAINER_ID=$(buildah from "$BASE_IMAGE")
-	buildah add "$CONTAINER_ID" "$GOPATH/bin/$EXECUTABLE" /usr/bin/
+	buildah copy "$CONTAINER_ID" "$GOPATH/bin/$EXECUTABLE" /usr/bin/
 	buildah config \
 		--entrypoint "/usr/bin/$EXECUTABLE" \
 		--author Knap \
