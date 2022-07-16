@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofrs/flock"
 	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/format"
+	"github.com/tliron/kutil/transcribe"
 )
 
 var initialState ard.Map
@@ -50,7 +50,7 @@ func (self *Server) GetState() (ard.Map, error) {
 func (self *Server) SetState(state ard.Map) (ard.Map, error) {
 	if file, err := os.Create(self.StateFilename); err == nil {
 		defer file.Close()
-		if err := format.WriteYAML(state, file, " ", false); err == nil {
+		if err := transcribe.WriteYAML(state, file, " ", false); err == nil {
 			return state, nil
 		} else {
 			return nil, err

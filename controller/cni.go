@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	resources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
-	"github.com/tliron/kutil/format"
 	"github.com/tliron/kutil/kubernetes"
+	"github.com/tliron/kutil/transcribe"
 	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/remotecommand"
@@ -38,7 +38,7 @@ func (self *Controller) createCniConfig(network *resources.Network) (string, err
 	}
 
 	if network.Spec.Hints != nil {
-		if hints, err := format.EncodeYAML(network.Spec.Hints, "  ", false); err == nil {
+		if hints, err := transcribe.EncodeYAML(network.Spec.Hints, "  ", false); err == nil {
 			execOptions.Stdin = true
 			streamOptions.Stdin = strings.NewReader(hints)
 		} else {

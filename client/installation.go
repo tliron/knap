@@ -336,7 +336,7 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 								},
 							},
 							LivenessProbe: &core.Probe{
-								Handler: core.Handler{
+								ProbeHandler: core.ProbeHandler{
 									HTTPGet: &core.HTTPGetAction{
 										Port: intstr.FromInt(8086),
 										Path: "/live",
@@ -344,7 +344,7 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 								},
 							},
 							ReadinessProbe: &core.Probe{
-								Handler: core.Handler{
+								ProbeHandler: core.ProbeHandler{
 									HTTPGet: &core.HTTPGetAction{
 										Port: intstr.FromInt(8086),
 										Path: "/ready",
@@ -406,7 +406,7 @@ func (self *Client) createProviderDeployment(provider string, imageName string, 
 							Image:           fmt.Sprintf("%s/%s", registry, imageName),
 							ImagePullPolicy: core.PullAlways,
 							LivenessProbe: &core.Probe{
-								Handler: core.Handler{
+								ProbeHandler: core.ProbeHandler{
 									HTTPGet: &core.HTTPGetAction{
 										Port: intstr.FromInt(8086),
 										Path: "/live",
@@ -414,7 +414,7 @@ func (self *Client) createProviderDeployment(provider string, imageName string, 
 								},
 							},
 							ReadinessProbe: &core.Probe{
-								Handler: core.Handler{
+								ProbeHandler: core.ProbeHandler{
 									HTTPGet: &core.HTTPGetAction{
 										Port: intstr.FromInt(8086),
 										Path: "/ready",
