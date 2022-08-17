@@ -53,8 +53,11 @@ var command = &cobra.Command{
 	Use:   toolName,
 	Short: "Start the Knap operator",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		err := terminal.ProcessColorizeFlag(colorize)
+		cleanup, err := terminal.ProcessColorizeFlag(colorize)
 		util.FailOnError(err)
+		if cleanup != nil {
+			util.OnExitError(cleanup)
+		}
 		if logTo == "" {
 			logging.Configure(verbose, nil)
 		} else {

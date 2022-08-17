@@ -27,8 +27,11 @@ var verbose int = 1
 var colorize string = "true"
 
 func main() {
-	err := terminal.ProcessColorizeFlag(colorize)
+	cleanup, err := terminal.ProcessColorizeFlag(colorize)
 	util.FailOnError(err)
+	if cleanup != nil {
+		util.OnExitError(cleanup)
+	}
 	if logTo == "" {
 		logging.Configure(verbose, nil)
 	} else {

@@ -2,9 +2,9 @@ package commands
 
 import (
 	"io"
+	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 )
 
@@ -28,7 +28,7 @@ var logsCommand = &cobra.Command{
 			defer reader.Close()
 		}
 		for _, reader := range readers {
-			io.Copy(terminal.Stdout, reader)
+			io.Copy(os.Stdout, reader)
 		}
 	},
 }
