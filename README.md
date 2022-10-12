@@ -81,3 +81,10 @@ Like "nap". The "k" is silent. If emphasis of the "k" is necessary, try saying: 
 According to the [Merriam-Webster Dictionary](https://www.merriam-webster.com/dictionary/knap)
 "knap" as a noun means "a crest of a small hill" and as a verb means to "to break with a quick
 blow". If you break things please fix them!
+
+
+See Also
+--------
+
+* [nmstate](https://github.com/nmstate/kubernetes-nmstate)
+* [ENO](https://github.com/Nordix/eno)
