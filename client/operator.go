@@ -2,10 +2,8 @@ package client
 
 import (
 	"fmt"
-	"time"
 
 	resources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
-	"github.com/tliron/kutil/version"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	rbac "k8s.io/api/rbac/v1"
@@ -13,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	waitpkg "k8s.io/apimachinery/pkg/util/wait"
 )
 
 func (self *Client) Install(registry string, wait bool) error {
@@ -59,10 +56,10 @@ func (self *Client) Install(registry string, wait bool) error {
 	}
 
 	if wait {
-		if _, err := self.waitForDeployment(operatorDeployment.Name); err != nil {
+		if _, err := self.WaitForDeployment(self.Namespace, operatorDeployment.Name); err != nil {
 			return err
 		}
-		if _, err := self.waitForDeployment(bridgeProviderDeployment.Name); err != nil {
+		if _, err := self.WaitForDeployment(self.Namespace, bridgeProviderDeployment.Name); err != nil {
 			return err
 		}
 	}
@@ -114,38 +111,38 @@ func (self *Client) Uninstall(wait bool) {
 	}
 
 	if wait {
-		self.waitForDeletion("service", func() bool {
+		self.WaitForDeletion("service", func() bool {
 			_, err := self.Kubernetes.CoreV1().Services(self.Namespace).Get(self.Context, fmt.Sprintf("%s-inventory", self.NamePrefix), meta.GetOptions{})
 			return err == nil
 		})
-		self.waitForDeletion("operator deployment", func() bool {
+		self.WaitForDeletion("operator deployment", func() bool {
 			_, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, fmt.Sprintf("%s-operator", self.NamePrefix), meta.GetOptions{})
 			return err == nil
 		})
-		self.waitForDeletion("bridge provider deployment", func() bool {
+		self.WaitForDeletion("bridge provider deployment", func() bool {
 			_, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, fmt.Sprintf("%s-provider-bridge", self.NamePrefix), meta.GetOptions{})
 			return err == nil
 		})
 		if self.Cluster {
-			self.waitForDeletion("cluster role binding", func() bool {
+			self.WaitForDeletion("cluster role binding", func() bool {
 				_, err := self.Kubernetes.RbacV1().ClusterRoleBindings().Get(self.Context, self.NamePrefix, meta.GetOptions{})
 				return err == nil
 			})
 		} else {
-			self.waitForDeletion("role binding", func() bool {
+			self.WaitForDeletion("role binding", func() bool {
 				_, err := self.Kubernetes.RbacV1().RoleBindings(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 				return err == nil
 			})
-			self.waitForDeletion("role", func() bool {
+			self.WaitForDeletion("role", func() bool {
 				_, err := self.Kubernetes.RbacV1().Roles(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 				return err == nil
 			})
 		}
-		self.waitForDeletion("service account", func() bool {
+		self.WaitForDeletion("service account", func() bool {
 			_, err := self.Kubernetes.CoreV1().ServiceAccounts(self.Namespace).Get(self.Context, self.NamePrefix, meta.GetOptions{})
 			return err == nil
 		})
-		self.waitForDeletion("custom resource definition", func() bool {
+		self.WaitForDeletion("custom resource definition", func() bool {
 			_, err := self.APIExtensions.ApiextensionsV1().CustomResourceDefinitions().Get(self.Context, resources.NetworkCustomResourceDefinition.Name, meta.GetOptions{})
 			return err == nil
 		})
@@ -283,40 +280,21 @@ func (self *Client) createClusterRoleBinding(serviceAccount *core.ServiceAccount
 
 func (self *Client) createOperatorDeployment(registry string, serviceAccount *core.ServiceAccount, replicas int32) (*apps.Deployment, error) {
 	appName := fmt.Sprintf("%s-operator", self.NamePrefix)
-	instanceName := fmt.Sprintf("%s-%s", appName, self.Namespace)
+	labels := self.Labels(appName, "operator", self.Namespace)
 
 	deployment := &apps.Deployment{
 		ObjectMeta: meta.ObjectMeta{
-			Name: appName,
-			Labels: map[string]string{
-				"app.kubernetes.io/name":       appName,
-				"app.kubernetes.io/instance":   instanceName,
-				"app.kubernetes.io/version":    version.GitVersion,
-				"app.kubernetes.io/component":  "operator",
-				"app.kubernetes.io/part-of":    self.PartOf,
-				"app.kubernetes.io/managed-by": self.ManagedBy,
-			},
+			Name:   appName,
+			Labels: labels,
 		},
 		Spec: apps.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &meta.LabelSelector{
-				MatchLabels: map[string]string{
-					"app.kubernetes.io/name":      appName,
-					"app.kubernetes.io/instance":  instanceName,
-					"app.kubernetes.io/version":   version.GitVersion,
-					"app.kubernetes.io/component": "operator",
-				},
+				MatchLabels: labels,
 			},
 			Template: core.PodTemplateSpec{
 				ObjectMeta: meta.ObjectMeta{
-					Labels: map[string]string{
-						"app.kubernetes.io/name":       appName,
-						"app.kubernetes.io/instance":   instanceName,
-						"app.kubernetes.io/version":    version.GitVersion,
-						"app.kubernetes.io/component":  "operator",
-						"app.kubernetes.io/part-of":    self.PartOf,
-						"app.kubernetes.io/managed-by": self.ManagedBy,
-					},
+					Labels: labels,
 				},
 				Spec: core.PodSpec{
 					ServiceAccountName: serviceAccount.Name,
@@ -351,6 +329,7 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 									},
 								},
 							},
+							SecurityContext: self.DefaultSecurityContext(),
 						},
 					},
 				},
@@ -358,45 +337,26 @@ func (self *Client) createOperatorDeployment(registry string, serviceAccount *co
 		},
 	}
 
-	return self.createDeployment(deployment, appName)
+	return self.CreateDeployment(deployment, appName)
 }
 
 func (self *Client) createProviderDeployment(provider string, imageName string, registry string, serviceAccount *core.ServiceAccount, replicas int32) (*apps.Deployment, error) {
 	appName := fmt.Sprintf("%s-provider-%s", self.NamePrefix, provider)
-	instanceName := fmt.Sprintf("%s-%s", appName, self.Namespace)
+	labels := self.Labels(appName, "provider", self.Namespace)
 
 	deployment := &apps.Deployment{
 		ObjectMeta: meta.ObjectMeta{
-			Name: appName,
-			Labels: map[string]string{
-				"app.kubernetes.io/name":       appName,
-				"app.kubernetes.io/instance":   instanceName,
-				"app.kubernetes.io/version":    version.GitVersion,
-				"app.kubernetes.io/component":  "provider",
-				"app.kubernetes.io/part-of":    self.PartOf,
-				"app.kubernetes.io/managed-by": self.ManagedBy,
-			},
+			Name:   appName,
+			Labels: labels,
 		},
 		Spec: apps.DeploymentSpec{
 			Replicas: &replicas,
 			Selector: &meta.LabelSelector{
-				MatchLabels: map[string]string{
-					"app.kubernetes.io/name":      appName,
-					"app.kubernetes.io/instance":  instanceName,
-					"app.kubernetes.io/version":   version.GitVersion,
-					"app.kubernetes.io/component": "provider",
-				},
+				MatchLabels: labels,
 			},
 			Template: core.PodTemplateSpec{
 				ObjectMeta: meta.ObjectMeta{
-					Labels: map[string]string{
-						"app.kubernetes.io/name":       appName,
-						"app.kubernetes.io/instance":   instanceName,
-						"app.kubernetes.io/version":    version.GitVersion,
-						"app.kubernetes.io/component":  "provider",
-						"app.kubernetes.io/part-of":    self.PartOf,
-						"app.kubernetes.io/managed-by": self.ManagedBy,
-					},
+					Labels: labels,
 				},
 				Spec: core.PodSpec{
 					ServiceAccountName: serviceAccount.Name,
@@ -421,6 +381,7 @@ func (self *Client) createProviderDeployment(provider string, imageName string, 
 									},
 								},
 							},
+							SecurityContext: self.DefaultSecurityContext(),
 						},
 					},
 				},
@@ -428,26 +389,5 @@ func (self *Client) createProviderDeployment(provider string, imageName string, 
 		},
 	}
 
-	return self.createDeployment(deployment, appName)
-}
-
-func (self *Client) createDeployment(deployment *apps.Deployment, appName string) (*apps.Deployment, error) {
-	if deployment, err := self.Kubernetes.AppsV1().Deployments(self.Namespace).Create(self.Context, deployment, meta.CreateOptions{}); err == nil {
-		return deployment, nil
-	} else if errors.IsAlreadyExists(err) {
-		self.Log.Infof("%s", err.Error())
-		return self.Kubernetes.AppsV1().Deployments(self.Namespace).Get(self.Context, appName, meta.GetOptions{})
-	} else {
-		return nil, err
-	}
-}
-
-func (self *Client) waitForDeletion(name string, condition func() bool) {
-	err := waitpkg.PollImmediate(time.Second, timeout, func() (bool, error) {
-		self.Log.Infof("waiting for %s to delete", name)
-		return !condition(), nil
-	})
-	if err != nil {
-		self.Log.Warningf("error while waiting for %s to delete: %s", name, err.Error())
-	}
+	return self.CreateDeployment(deployment, appName)
 }

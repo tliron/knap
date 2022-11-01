@@ -28,16 +28,12 @@ func (self *Controller) processNetwork(network *resources.Network) (bool, error)
 	}
 
 	// Process deployments
-	if err := self.processDeployments(network, networkAttachmentDefinition); err == nil {
-		return true, nil
-	} else {
+	if err := self.processDeployments(network, networkAttachmentDefinition); err != nil {
 		return false, err
 	}
 
 	// Process stateful sets
-	if err := self.processStatefulSets(network, networkAttachmentDefinition); err == nil {
-		return true, nil
-	} else {
+	if err := self.processStatefulSets(network, networkAttachmentDefinition); err != nil {
 		return false, err
 	}
 

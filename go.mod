@@ -8,7 +8,7 @@ require (
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.3.0
 	github.com/spf13/cobra v1.6.1
-	github.com/tliron/kutil v0.1.62
+	github.com/tliron/kutil v0.1.63
 	google.golang.org/grpc v1.50.1
 	google.golang.org/protobuf v1.28.1
 	k8s.io/api v0.25.3

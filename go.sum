@@ -403,8 +403,8 @@ github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
-github.com/tliron/kutil v0.1.62 h1:Nj4avenQO9t9QNaD6qXf1DsdyOjQrORIJjoc0FCnsBg=
-github.com/tliron/kutil v0.1.62/go.mod h1:Mo1pAtg/9yG3ClnUv32Hrl+t0BFFCg49RpCjHG3sY7c=
+github.com/tliron/kutil v0.1.63 h1:/xOqEShxPymwhcVcPFAks8zj43HU+NljbmzYjNXIO+Y=
+github.com/tliron/kutil v0.1.63/go.mod h1:Mo1pAtg/9yG3ClnUv32Hrl+t0BFFCg49RpCjHG3sY7c=
 github.com/tliron/yamlkeys v1.3.6 h1:PPV4q7flMqIvmSUSsEZuns7Qt3VIMxkhBj+6KTRvI9c=
 github.com/tliron/yamlkeys v1.3.6/go.mod h1:K/uKQwMke5a9h6YW/Sj9pcp66vU3lRP97OrOjo/ELoU=
 github.com/vmihailenco/msgpack/v5 v5.3.5 h1:5gO0H1iULLWGhs2H5tbAHIZTV8/cYafcFOr9znI5mJU=

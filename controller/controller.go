@@ -106,7 +106,6 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		processorPeriod,
 		func(name string, namespace string) (interface{}, error) {
 			return self.Client.GetNetwork(namespace, name)
-			return nil, nil
 		},
 		func(object interface{}) (bool, error) {
 			return self.processNetwork(object.(*knapresources.Network))
