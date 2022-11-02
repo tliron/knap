@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+. "$HERE/_trap"
+
+export NAMESPACE=${NAMESPACE:-knap}
+
+m "deleting \"implicit\" example..."
+kubectl delete --namespace="$NAMESPACE" --wait -f "$ROOT/examples/hello-world/implicit.yaml" || true
+
+m "deleting operator from namespace \"$NAMESPACE\"..."
+knap uninstall --namespace="$NAMESPACE" --wait -v
+
+m "cleaning up events..."
+kubectl delete events --all --namespace="$NAMESPACE"
+
+m "cleaning up virtual links creating by bridge CNI..."
+echo "sudo ip link delete explicit-a || true && exit" | minikube ssh
+echo "sudo ip link delete explicit-b || true && exit" | minikube ssh
+echo "sudo ip link delete implicit-a || true && exit" | minikube ssh
+echo "sudo ip link delete implicit-b || true && exit" | minikube ssh

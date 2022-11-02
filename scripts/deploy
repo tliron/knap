@@ -1,0 +1,26 @@
+#!/bin/bash
+set -e
+
+HERE=$(dirname "$(readlink --canonicalize "$BASH_SOURCE")")
+. "$HERE/_env"
+. "$HERE/_trap"
+
+export NAMESPACE=${NAMESPACE:-knap}
+
+for ARG in "$@"; do
+	case "$ARG" in
+		-c)
+			NAMESPACE=$NAMESPACE "$HERE/delete"
+			;;
+		-b)
+			"$HERE/build-container-images"
+			"$HERE/publish-container-images"
+			;;
+	esac
+done
+
+m "deploying operator to namespace \"$NAMESPACE\"..."
+knap install --namespace="$NAMESPACE" --wait -v
+
+m "deploying \"implicit\" example..."
+kubectl apply --namespace="$NAMESPACE" -f "$ROOT/examples/hello-world/implicit.yaml"
