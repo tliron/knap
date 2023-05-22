@@ -5,7 +5,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/tliron/kutil/logging"
+	"github.com/tliron/commonlog"
 	"google.golang.org/grpc"
 )
 
@@ -17,10 +17,10 @@ type Client struct {
 	socketName string
 	connection *grpc.ClientConn
 	client     ProviderClient
-	log        logging.Logger
+	log        commonlog.Logger
 }
 
-func NewClient(socketName string, log logging.Logger) (*Client, error) {
+func NewClient(socketName string, log commonlog.Logger) (*Client, error) {
 	log.Infof("creating provider gRPC client on socket %s", socketName)
 	if connection, err := grpc.Dial(socketName, grpc.WithInsecure(), grpc.WithDialer(dialer)); err == nil {
 		return &Client{

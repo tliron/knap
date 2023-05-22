@@ -4,8 +4,8 @@ import (
 	"context"
 	"net"
 
+	"github.com/tliron/commonlog"
 	"github.com/tliron/knap/provider"
-	"github.com/tliron/kutil/logging"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -17,10 +17,10 @@ import (
 type Server struct {
 	StateFilename string
 	SocketName    string
-	Log           logging.Logger
+	Log           commonlog.Logger
 }
 
-func NewServer(stateFilename string, socketName string, log logging.Logger) *Server {
+func NewServer(stateFilename string, socketName string, log commonlog.Logger) *Server {
 	return &Server{
 		StateFilename: stateFilename,
 		SocketName:    socketName,

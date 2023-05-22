@@ -5,13 +5,13 @@ import (
 	"time"
 
 	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
+	"github.com/tliron/commonlog"
 	knapclientset "github.com/tliron/knap/apis/clientset/versioned"
 	knapinformers "github.com/tliron/knap/apis/informers/externalversions"
 	knaplisters "github.com/tliron/knap/apis/listers/knap.github.com/v1alpha1"
 	clientpkg "github.com/tliron/knap/client"
 	knapresources "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
 	kubernetesutil "github.com/tliron/kutil/kubernetes"
-	"github.com/tliron/kutil/logging"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/informers"
@@ -41,7 +41,7 @@ type Controller struct {
 	Networks knaplisters.NetworkLister
 
 	Context contextpkg.Context
-	Log     logging.Logger
+	Log     commonlog.Logger
 }
 
 func NewController(toolName string, cluster bool, namespace string, kubernetes kubernetes.Interface, apiExtensions apiextensionspkg.Interface, net netpkg.Interface, knap knapclientset.Interface, config *restpkg.Config, informerResyncPeriod time.Duration, stopChannel <-chan struct{}) *Controller {
@@ -51,7 +51,7 @@ func NewController(toolName string, cluster bool, namespace string, kubernetes k
 		namespace = ""
 	}
 
-	log := logging.GetLoggerf("%s.controller", toolName)
+	log := commonlog.GetLoggerf("%s.controller", toolName)
 
 	self := Controller{
 		Config:      config,

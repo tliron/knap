@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/tliron/commonlog"
 	cobrautil "github.com/tliron/kutil/cobra"
-	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 	"k8s.io/klog/v2"
@@ -59,11 +59,11 @@ var command = &cobra.Command{
 			util.OnExitError(cleanup)
 		}
 		if logTo == "" {
-			logging.Configure(verbose, nil)
+			commonlog.Configure(verbose, nil)
 		} else {
-			logging.Configure(verbose, &logTo)
+			commonlog.Configure(verbose, &logTo)
 		}
-		if writer := logging.GetWriter(); writer != nil {
+		if writer := commonlog.GetWriter(); writer != nil {
 			klog.SetOutput(writer)
 		}
 	},

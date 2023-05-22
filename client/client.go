@@ -4,8 +4,8 @@ import (
 	"context"
 
 	netpkg "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
+	"github.com/tliron/commonlog"
 	knappkg "github.com/tliron/knap/apis/clientset/versioned"
-	"github.com/tliron/kutil/logging"
 	apiextensionspkg "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kubernetespkg "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -26,5 +26,5 @@ type Client struct {
 	OperatorImageName string
 
 	Context context.Context
-	Log     logging.Logger
+	Log     commonlog.Logger
 }

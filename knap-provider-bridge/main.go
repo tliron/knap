@@ -7,15 +7,15 @@ import (
 	"os"
 
 	"github.com/heptiolabs/healthcheck"
+	"github.com/tliron/commonlog"
+	"github.com/tliron/go-ard"
 	"github.com/tliron/knap/knap-provider-bridge/server"
 	"github.com/tliron/knap/provider"
-	"github.com/tliron/kutil/ard"
-	"github.com/tliron/kutil/logging"
 	"github.com/tliron/kutil/terminal"
 	"github.com/tliron/kutil/util"
 	"k8s.io/klog/v2"
 
-	_ "github.com/tliron/kutil/logging/simple"
+	_ "github.com/tliron/commonlog/simple"
 )
 
 const SOCKET_NAME = "/tmp/knap-provider-bridge.sock"
@@ -33,11 +33,11 @@ func main() {
 		util.OnExitError(cleanup)
 	}
 	if logTo == "" {
-		logging.Configure(verbose, nil)
+		commonlog.Configure(verbose, nil)
 	} else {
-		logging.Configure(verbose, &logTo)
+		commonlog.Configure(verbose, &logTo)
 	}
-	if writer := logging.GetWriter(); writer != nil {
+	if writer := commonlog.GetWriter(); writer != nil {
 		klog.SetOutput(writer)
 	}
 
