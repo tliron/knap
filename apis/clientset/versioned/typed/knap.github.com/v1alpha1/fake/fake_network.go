@@ -4,11 +4,13 @@ package fake
 
 import (
 	"context"
+	json "encoding/json"
+	"fmt"
 
+	knapgithubcomv1alpha1 "github.com/tliron/knap/apis/applyconfiguration/knap.github.com/v1alpha1"
 	v1alpha1 "github.com/tliron/knap/resources/knap.github.com/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
@@ -20,9 +22,9 @@ type FakeNetworks struct {
 	ns   string
 }
 
-var networksResource = schema.GroupVersionResource{Group: "knap.github.com", Version: "v1alpha1", Resource: "networks"}
+var networksResource = v1alpha1.SchemeGroupVersion.WithResource("networks")
 
-var networksKind = schema.GroupVersionKind{Group: "knap.github.com", Version: "v1alpha1", Kind: "Network"}
+var networksKind = v1alpha1.SchemeGroupVersion.WithKind("Network")
 
 // Get takes name of the network, and returns the corresponding network object, and an error if there is any.
 func (c *FakeNetworks) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Network, err error) {
@@ -118,6 +120,51 @@ func (c *FakeNetworks) DeleteCollection(ctx context.Context, opts v1.DeleteOptio
 func (c *FakeNetworks) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Network, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(networksResource, c.ns, name, pt, data, subresources...), &v1alpha1.Network{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Network), err
+}
+
+// Apply takes the given apply declarative configuration, applies it and returns the applied network.
+func (c *FakeNetworks) Apply(ctx context.Context, network *knapgithubcomv1alpha1.NetworkApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Network, err error) {
+	if network == nil {
+		return nil, fmt.Errorf("network provided to Apply must not be nil")
+	}
+	data, err := json.Marshal(network)
+	if err != nil {
+		return nil, err
+	}
+	name := network.Name
+	if name == nil {
+		return nil, fmt.Errorf("network.Name must be provided to Apply")
+	}
+	obj, err := c.Fake.
+		Invokes(testing.NewPatchSubresourceAction(networksResource, c.ns, *name, types.ApplyPatchType, data), &v1alpha1.Network{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Network), err
+}
+
+// ApplyStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
+func (c *FakeNetworks) ApplyStatus(ctx context.Context, network *knapgithubcomv1alpha1.NetworkApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.Network, err error) {
+	if network == nil {
+		return nil, fmt.Errorf("network provided to Apply must not be nil")
+	}
+	data, err := json.Marshal(network)
+	if err != nil {
+		return nil, err
+	}
+	name := network.Name
+	if name == nil {
+		return nil, fmt.Errorf("network.Name must be provided to Apply")
+	}
+	obj, err := c.Fake.
+		Invokes(testing.NewPatchSubresourceAction(networksResource, c.ns, *name, types.ApplyPatchType, data, "status"), &v1alpha1.Network{})
 
 	if obj == nil {
 		return nil, err

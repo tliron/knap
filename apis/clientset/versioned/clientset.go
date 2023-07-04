@@ -17,8 +17,7 @@ type Interface interface {
 	KnapV1alpha1() knapv1alpha1.KnapV1alpha1Interface
 }
 
-// Clientset contains the clients for groups. Each group has exactly one
-// version included in a Clientset.
+// Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
 	knapV1alpha1 *knapv1alpha1.KnapV1alpha1Client
